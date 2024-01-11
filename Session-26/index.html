@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .container {
+        margin-top: 100px;
+        display: flex;
+        justify-content: space-evenly;
+      }
+      #form {
+        width: 500px;
+        box-shadow: 0 0 10px black;
+
+        text-align: center;
+        padding: 50px;
+      }
+    </style>
+    <script>
+      function getUsers() {
+        fetch("http://localhost:4040/")
+          .then((res) => {
+            return res.json();
+          })
+          .then((data) => {
+            console.log(data.results);
+            var table = document.createElement("table");
+            var tr1 = document.createElement("tr");
+            var th1 = document.createElement("th");
+            var th2 = document.createElement("th");
+            var th3 = document.createElement("th");
+            var th4 = document.createElement("th");
+
+            th1.innerText = "ID";
+            th2.innerText = "NAME";
+            th3.innerText = "CITY";
+            th4.innerText = "ACTIONS";
+
+            th4.colSpan = "2";
+
+            tr1.appendChild(th1);
+            tr1.appendChild(th2);
+            tr1.appendChild(th3);
+            tr1.appendChild(th4);
+
+            table.appendChild(tr1);
+
+            data.results.forEach((user, index) => {
+              var tr2 = document.createElement("tr");
+
+              var td1 = document.createElement("td");
+              var td2 = document.createElement("td");
+              var td3 = document.createElement("td");
+              var td4 = document.createElement("td");
+              var td5 = document.createElement("td");
+
+              var bt1 = document.createElement("button");
+              var bt2 = document.createElement("button");
+
+              bt1.innerText = "Update";
+              bt2.innerText = "Delete";
+
+              bt2.onclick = function () {
+                fetch(`http://localhost:4040/delete/${user._id}`, {
+                  method: "DELETE",
+                })
+                  .then((res) => res.json())
+                  .then((data) => {
+                    document.querySelector("table").remove();
+
+                    getUsers();
+                  })
+                  .catch((error) => {
+                    alert("error while deleting the user");
+                    console.log(error);
+                  });
+              };
+
+              td1.innerText = index + 1;
+              td2.innerText = user.username;
+              td3.innerText = user.city;
+              td4.appendChild(bt1);
+              td5.appendChild(bt2);
+
+              tr2.appendChild(td1);
+              tr2.appendChild(td2);
+              tr2.appendChild(td3);
+              tr2.appendChild(td4);
+              tr2.appendChild(td5);
+
+              tr2.align = "center";
+
+              table.appendChild(tr2);
+            });
+
+            table.frame = "box";
+            table.rules = "all";
+            table.cellPadding = "5";
+            table.style.margin = "auto";
+            table.width = "500px";
+
+            document.querySelector("#table").appendChild(table);
+          })
+          .catch((error) => {
+            alert("Failed to received the data");
+            console.log(error);
+          });
+      }
+
+      function sendData() {
+        var username = document.getElementById("username").value;
+        var city = document.getElementById("city").value;
+
+        var newuser = {
+          username: username,
+          city: city,
+        };
+
+        fetch("http://localhost:4040/newdata", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newuser),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log(data);
+            if (data.ok) {
+              document.querySelector("table").remove();
+              getUsers();
+            }
+          })
+          .catch((error) => {
+            alert("error while adding new user");
+            console.log(error);
+          });
+      }
+    </script>
+  </head>
+  <body onload="getUsers()">
+    <div class="container">
+      <div id="form">
+        <h2 style="color: green">New User</h2>
+        <input type="text" placeholder="Enter Text" id="username" />
+        <select id="city">
+          <option>Select City</option>
+          <option>delhi</option>
+          <option>hyderabad</option>
+          <option>pune</option>
+          <option>banglore</option>
+          <option>mumbai</option>
+          <option>chennai</option></select
+        ><br /><br />
+        <button onclick="sendData()">Submit</button>
+      </div>
+      <div id="table"></div>
+    </div>
+  </body>
+</html>
